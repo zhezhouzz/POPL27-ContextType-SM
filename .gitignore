@@ -1,4 +1,6 @@
 Makefile.coq*
+Makefile
+Makefile.conf
 .*.aux
 .*.d
 *.a

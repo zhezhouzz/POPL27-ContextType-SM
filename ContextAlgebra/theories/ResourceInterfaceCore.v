@@ -14,6 +14,9 @@ Context {V : Type} `{ValueSig V}.
 
 Local Notation StoreT := (gmap atom V) (only parsing).
 
+(** Paper Definition 4.1 / Definition D.2 call these capabilities or
+    resources.  The code uses [World]/[WfWorld] because a resource is a set of
+    possible stores equipped with a domain and a well-formedness invariant. *)
 Definition World : Type := @WorldA atom _ _ V.
 Definition WfWorld : Type := @WfWorldA atom _ _ V.
 Definition LWorld : Type := @WorldA logic_var _ _ V.
@@ -435,6 +438,8 @@ Proof.
   reflexivity.
 Qed.
 
+(** Concrete resource-algebra operations used by separating conjunction,
+    nondeterministic choice, and resource refinement. *)
 Definition world_compat (m1 m2 : World) : Prop := worldA_compat m1 m2.
 Definition raw_product (m1 m2 : World) : World := rawA_product m1 m2.
 Definition raw_sum (m1 m2 : World) : World := rawA_sum m1 m2.
@@ -594,6 +599,9 @@ Definition res_extend_by (m : WfWorld) (F : fiber_extension) (n : WfWorld) : Pro
   resA_extend_by m F n.
 Definition fiber_extension_functional_on (m : WfWorld) (F : fiber_extension) : Prop :=
   fiber_extensionA_functional_on m F.
+(** Paper Definition 4.2: [fiber(mfib, w, X, σ)] says that [mfib] is the
+    subresource of [w] whose stores project to [σ] on the observed variables
+    [X]. *)
 Definition res_fiber_from_projection
     (w : WfWorld) (X : aset) (σ : StoreT) (wfib : WfWorld) : Prop :=
   resA_fiber_from_projection w X σ wfib.

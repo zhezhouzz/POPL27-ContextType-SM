@@ -1,7 +1,7 @@
 (** * Denotation.Context
 
-    Denotation of type contexts, expressed directly with the new recursive
-    context-type denotation. *)
+    Type-context denotation from paper Definition 4.8, expressed directly with
+    the recursive context-type denotation. *)
 
 From Denotation Require Export Notation TypeDenote TypeDenoteRegular
   TypePersistBase TypePersistArrow TypePersistSingleton TypePersistWandForward

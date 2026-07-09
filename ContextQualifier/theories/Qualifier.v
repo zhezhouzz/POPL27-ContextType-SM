@@ -1,8 +1,8 @@
 (** * ContextQualifier.Qualifier
 
-    Store-level qualifiers are locally-nameless predicates over lvar-keyed
-    stores.  This mirrors [LogicQualifier]'s dependent-domain design, except
-    the payload is an [LStore] rather than an [LWorld].
+    Qualifiers for refinement propositions in paper Fig. 2.  The artifact
+    shallowly embeds them as Coq predicates over lvar-keyed stores, together
+    with an explicit support set.
 
     The core language operation is opening.  Opening is implemented as a swap
     between a bound lvar and a free atom, with the predicate interpreting its

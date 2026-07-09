@@ -4,6 +4,9 @@ From Denotation Require Import Notation.
 
 Section TypeDenote.
 
+(** Static and dynamic guards from paper Sec. 4.4: type denotation always
+    carries type well-formedness, world typing, erased basic typing, and
+    totality of the denoted term. *)
 Definition ty_guard_formula
     (Σ : lty_env) (τ : context_ty) (e : tm) : FormulaT :=
   (FWfTy[Σ; τ] ∧
@@ -77,6 +80,9 @@ Lemma fiberwise_joinable_ty_guard_formula Σ τ e :
   fiberwise_joinable (ty_guard_formula Σ τ e).
 Proof. intros X. apply fiberwise_joinable_on_ty_guard_formula. Qed.
 
+(** A result refinement is interpreted over values of the declared base type.
+    This is folded into [typed_result_qual] below so that over/under coverage
+    ranges over typed results rather than all values. *)
 Definition result_basic_typing_formula (b : base_ty) : FormulaT :=
   FHasType[(∅ ▷ TBase b)%lvar ⊢ (ret # 0)%core ⋮ TBase b].
 
@@ -128,6 +134,10 @@ Reserved Notation "'⟦ty' τ '⟧[' Σ ',' gas ']' e"
    gas at level 9, e at level 20,
    format "⟦ty  τ  ⟧[ Σ ,  gas ]  e").
 
+(** Gas-indexed type denotation for paper Definition 4.7 and the
+    nondeterministic/persistent extension in Sec. 5.  The saturated
+    denotation [ty_denote] below runs this definition for the syntactic depth
+    of the type. *)
 Fixpoint ty_denote_gas
     (gas : nat) (Σ : lty_env) (τ : context_ty) (e : tm)
     {struct gas} : FormulaT :=

@@ -1,3 +1,3 @@
-(** * Compatibility wrapper for core language core syntax. *)
+(** * Core language syntax. *)
 
 From CoreLang Require Export Syntax.

@@ -1,6 +1,7 @@
 (** * CoreLang.SmallStep
 
-    Call-by-value small-step operational semantics for the core language.
+    Call-by-value small-step operational semantics for the core language
+    (appendix Fig. 9).
     We define:
       - [head_step e e'] : head reduction (no context)
       - [step e e']      : one-step reduction (under let-binding context)

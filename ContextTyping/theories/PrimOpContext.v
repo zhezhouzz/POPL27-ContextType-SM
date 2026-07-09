@@ -11,8 +11,9 @@ From ContextLogic Require Import FormulaSemantics.
 From ContextTypeLanguage Require Import WF.
 From Denotation Require Import Context.
 
-(** CoreLang keeps the erased unary type [prim_op_type]; this layer refines it
-    with an over-approximate argument qualifier and a precise result qualifier. *)
+(** Paper Definition 4.9: primitive-operation signatures.  CoreLang keeps the
+    erased unary type [prim_op_type]; this layer refines it with an
+    over-approximate argument qualifier and a precise result qualifier. *)
 
 Record primop_sig := mk_primop_sig {
   prim_arg_base : base_ty;
@@ -53,5 +54,6 @@ Record wf_primop_sig (op : prim_op) (sig : primop_sig) : Prop := {
   wf_primop_semantic : primop_semantic_ok op sig;
 }.
 
+(** Well-formed primitive context from paper Definition 4.9. *)
 Definition wf_primop_ctx (Φ : primop_ctx) : Prop :=
   forall op, wf_primop_sig op (Φ op).

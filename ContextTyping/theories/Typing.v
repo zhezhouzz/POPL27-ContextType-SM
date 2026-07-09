@@ -41,6 +41,7 @@ Definition wf_context_ty (Γ : ctx) (τ : context_ty) : Prop :=
 
 (** ** Semantic subtyping *)
 
+(** Semantic subsumption relation from paper Fig. 5. *)
 Definition sub_type_under (Σ : gmap atom ty) (Γ : ctx) (τ1 τ2 : context_ty) : Prop :=
   let Δ := (⌊Γ⌋)%ctx in
   wf_ctx_under Σ Γ ∧
@@ -100,6 +101,10 @@ Reserved Notation "Γ '⊢ᶜ' '[' Φ ';' Σ ']' e '⋮' τ"
   (at level 40, Φ at level 200, Σ at level 200,
    e at level 200, τ at level 200).
 
+(** Declarative context typing rules from paper Fig. 4 and Sec. 5.1.  The
+    match rule with paper control-flow index [i] is represented by the three
+    Boolean-specific constructors [CT_MatchBoth], [CT_MatchTrueOnly], and
+    [CT_MatchFalseOnly]. *)
 Inductive has_context_type (Φ : primop_ctx) (Σ : gmap atom ty) : ctx -> tm -> context_ty -> Prop :=
 
   (** T-Var *)

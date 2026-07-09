@@ -1,6 +1,6 @@
 (** * BasicDenotation.TermOpen
 
-    Split out from [Term.v] to keep individual proof files small. *)
+    Formula encodings for term results and their opened forms. *)
 
 From ContextBasicDenotation Require Import Notation StoreTyping.
 From ContextBasicDenotation Require Import TermSyntax TermEval.
@@ -10,6 +10,8 @@ From CoreLang Require Import StrongNormalization.
 
 Section TermDenotation.
 
+(** Formula-level denotation of a term result, corresponding to the
+    "denotation of a term e" mentioned at the start of paper Sec. 4.4. *)
 Definition expr_result_qual (e : tm) (x : logic_var) : qualifier (V := value) :=
   tqual (tm_lvars e ∪ {[x]})
     (fun s => expr_result_at_store e x (lso_store s)).

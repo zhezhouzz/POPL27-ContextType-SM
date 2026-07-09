@@ -1,15 +1,14 @@
 (** * ContextTypeLanguage.Syntax
 
-    Core context-type syntax and syntax-only structural lemmas. *)
+    Context-type and type-context syntax from paper Fig. 2, plus syntax-only
+    structural operations such as locally-nameless opening, erasure, and
+    fixed-point decrease qualifiers. *)
 
 From Stdlib Require Import Arith.Wf_nat Classes.RelationClasses.
 From ContextQualifier Require Export Qualifier.
 From ContextBase Require Import BaseTactics.
 
-(** Scopes live next to the syntax they print.  The legacy
-    [ContextTypeLanguage.Notation] file re-exports these definitions for
-    compatibility, but new files should get the notation by importing the
-    corresponding syntax layer directly. *)
+(** Scopes live next to the syntax they print. *)
 Declare Scope cty_scope.
 Declare Scope ctx_scope.
 Declare Scope lvar_scope.
@@ -23,11 +22,7 @@ Notation "'#ₗ' k" := (LVBound k)
 Notation "'$ₗ' x" := (LVFree x)
   (at level 5, format "$ₗ x").
 
-(** * ContextTypeLanguage.Syntax
-
-    Core syntax and structural functions for context types and contexts. *)
-
-
+(** Core syntax for context types and bunched type contexts. *)
 Inductive context_ty : Type :=
   | CTOver  (b : base_ty) (φ : type_qualifier)
   | CTUnder (b : base_ty) (φ : type_qualifier)
@@ -254,6 +249,8 @@ Fixpoint context_ty_msubst_store
   | CTPersist τ => CTPersist (context_ty_msubst_store σ τ)
   end.
 
+(** Erasure to the ordinary basic type system, used by typing side conditions
+    and by the denotational guards. *)
 Fixpoint erase_ty (τ : context_ty) : ty :=
   match τ with
   | CTOver b _ => TBase b
@@ -387,6 +384,7 @@ Definition denote_lvar_value (σ : LStore (V := value)) (v : value) : option val
   | vfix T vf => Some (vfix T vf)
   end.
 
+(** Equality qualifier used by precise singleton refinements. *)
 Definition mk_q_eq (v1 v2 : value) : type_qualifier :=
   tqual (lvar_value_keys v1 ∪ lvar_value_keys v2)
     (fun σ => denote_lvar_value (lso_store σ) v1 =
@@ -446,6 +444,9 @@ Definition primop_ty
     (ret_b : base_ty) (ret_φ : type_qualifier) : context_ty :=
   CTArrow (over_ty arg_b arg_φ) (precise_ty ret_b ret_φ).
 
+(** Recursive-call argument type used by the artifact's T-Fix rule: recursive
+    calls must use an argument satisfying the original parameter type and
+    strictly decreasing with respect to the base-type measure. *)
 Definition fix_rec_call_ty
     (b : base_ty) (x : atom) (τx τ : context_ty) : context_ty :=
   CTArrow

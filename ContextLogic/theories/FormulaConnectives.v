@@ -7,13 +7,6 @@ From ContextAlgebra Require Import ResourceInterface ResourceCompat.
 From ContextBase Require Import LogicVarOpenEnv.
 From Stdlib Require Import Lia Logic.ProofIrrelevance.
 
-(** * ContextLogic.FormulaConnectives
-
-    Derived proof principles for the store-free formula semantics.  This file
-    keeps only statements that still describe useful structure under the new
-    dependent-lqual and extension-based forall definitions. *)
-
-
 Section FormulaConnectives.
 
 Context {V : Type} `{ValueSig V}.

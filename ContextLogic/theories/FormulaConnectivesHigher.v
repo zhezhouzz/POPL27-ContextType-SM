@@ -9,11 +9,6 @@ From ContextAlgebra Require Import ResourceInterface ResourceCompat.
 From ContextBase Require Import LogicVarOpenEnv.
 From Stdlib Require Import Lia Logic.ProofIrrelevance.
 
-(** * ContextLogic.FormulaConnectivesHigher
-
-    Derived proof principles for implication formulas. *)
-
-
 Section FormulaConnectives.
 
 Context {V : Type} `{ValueSig V}.
@@ -287,20 +282,11 @@ Proof.
   models_fuel_irrel Hψ.
 Qed.
 
-(** Reviewer-facing sanity theorem.
-
-    [FBWand] has product-domain semantics: the semantic clause only invokes the
+(** [FBWand] has product-domain semantics: the semantic clause only invokes the
     body when the product of the argument resource and closure resource
-    introduces exactly the atoms opened for the binder block.  Reviewers may
-    reasonably ask how this relates to the ordinary BI wand rule.  The theorem
-    below records that a well-formed [FBWand] supports the usual BI-style use:
-    any compatible argument resource that provides the opened binder atoms and
-    satisfies the opened antecedent entails the opened consequent on the product
-    world.
-
-    This theorem is intentionally not used by type denotation, minimality, or
-    Fundamental.  It is metatheory explaining the binder-aware connective, so do
-    not delete it as an apparently unused wrapper during cleanup. *)
+    introduces exactly the atoms opened for the binder block.  The theorem
+    below records the corresponding ordinary BI-style use principle for a
+    well-formed binder-aware wand. *)
 Theorem res_models_fbwand_bi_of_wf
     (m : WfWorldT) d (φ ψ : FormulaT) :
   formula_wf (FBWand d φ ψ) ->
@@ -648,17 +634,10 @@ Proof.
   - apply res_models_forall_rev_intro. exact Hscope.
 Qed.
 
+(** Full-world mapping principle for [FForall], useful when comparing opened
+    formulas over the whole current resource rather than just their support. *)
 Lemma res_models_forall_full_world_map
     (m : WfWorldT) (φ ψ : FormulaT) :
-  (** This is the "full-world" view of [FForall].  The primitive semantics
-      only asks extensions to read [formula_fv φ], but nested denotation
-      transports often open a formula under several binders and then need to
-      compare witnesses whose input domain is the whole current world.  The
-      proof converts [FForall φ] to that full-world form with
-      [res_models_forall_rev], maps the opened body there, and packages the
-      result back with [res_models_forall_rev_intro].  This is intentionally
-      independent of any [formula_fv φ = formula_fv ψ] side condition; the
-      world-domain restriction/restrict-back hypotheses carry the alignment. *)
   formula_scoped_in_world m (FForall ψ) ->
   (∃ L : aset,
     forall y : atom, y ∉ L ->

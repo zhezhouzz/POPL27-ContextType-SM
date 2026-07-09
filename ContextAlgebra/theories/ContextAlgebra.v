@@ -1,3 +1,3 @@
-(** * Compatibility wrapper for context algebra structure. *)
+(** * Context algebra structure. *)
 
 From ContextAlgebra Require Export ResourceAlgebra.

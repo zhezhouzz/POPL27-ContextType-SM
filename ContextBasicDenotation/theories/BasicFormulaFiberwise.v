@@ -1,8 +1,6 @@
 (** * BasicDenotation.BasicFormulaFiberwise
 
-    Fiberwise aggregation facts for the basic denotation atoms.  These lemmas
-    keep denotation proofs from unfolding the atom encodings when they only
-    need the generic Logic-layer joinability principles. *)
+    Fiberwise aggregation facts for the basic denotation atoms. *)
 
 From ContextBasicDenotation Require Import
   Notation StoreTyping TermEval TermOpen BasicTypingFormula.

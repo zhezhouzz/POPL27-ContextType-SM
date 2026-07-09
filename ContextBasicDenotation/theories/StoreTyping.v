@@ -42,6 +42,8 @@ Definition wfworld_closed_on (X : aset) (m : WfWorld) : Prop :=
 Definition wfworld_closed (m : WfWorld) : Prop :=
   wfworld_closed_on (world_dom (m : World)) m.
 
+(** World/store typing guard used by type denotations: every store in the
+    current resource agrees with the erased environment [Σ]. *)
 Definition basic_world_qual (Σ : lty_env) : qualifier (V := value) :=
   tqual (dom Σ) (fun s => storeA_has_type Σ (lso_store s)).
 

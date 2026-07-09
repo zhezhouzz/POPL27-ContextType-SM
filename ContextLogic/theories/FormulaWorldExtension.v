@@ -1,8 +1,6 @@
 (** * ContextLogic.FormulaWorldExtension
 
-    Formula-level transport principles for explicit world extensions under the
-    store-free semantics.  The old forall-by-extension equivalence lemmas are
-    intentionally absent: forall is now defined directly by extension. *)
+    Formula-level transport principles for explicit world extensions. *)
 
 From ContextAlgebra Require Import ResourceInterface ResourceCompat.
 From ContextLogic Require Import FormulaSemantics FormulaConnectives.

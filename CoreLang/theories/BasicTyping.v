@@ -1,6 +1,7 @@
 (** * CoreLang.BasicTyping
 
-    Standard simple (basic) type system for the core language.
+    Standard simple (basic) type system for the core language (appendix
+    Fig. 11).
     This is the "erased" type system [⊢_basic] referenced by the
     context-type erasure and lifting functions.
 

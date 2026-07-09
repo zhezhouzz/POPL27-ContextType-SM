@@ -72,9 +72,7 @@ Arguments stale_lty_env /.
 #[global] Instance into_lvars_logic_ty_env : IntoLVars (gmap logic_var ty) :=
   fun Σ => dom Σ.
 
-(** * ContextTypeLanguage.LtyEnv
-
-    Type-language compatibility names for generic lvar-store opening laws. *)
+(** ** Opening laws for type environments. *)
 
 
 Lemma lty_env_msubst_store_lookup_some σ (Σ : lty_env) v T :
@@ -166,9 +164,7 @@ Proof.
       rewrite Hnone in Hv. discriminate.
 Qed.
 
-(** * ContextTypeLanguage.LtyEnv
-
-    Type-language compatibility names for generic lvar-store binder laws. *)
+(** ** Binder laws for type environments. *)
 
 
 Lemma typed_lty_env_bind_dom (Σ : lty_env) T :

@@ -1,13 +1,6 @@
 (** * Denotation.TypeEquivFiber
 
-    The fiber-equality term transport theorem for type denotation.
-
-    This file is intentionally kept as a small interface while the new
-    nondeterministic result-graph semantics settles.  The previous proof
-    attempt decomposed Over/Under/Sum/Arrow/Wand into several body lemmas whose
-    statements mentioned the old [expr_result_formula] and [relevant_env]
-    shapes.  Those old helper proofs are no longer on the compile path; use
-    git history for the detailed script when reproving this theorem. *)
+    Fiber-equality term transport theorem for type denotation. *)
 
 From Denotation Require Import Notation TypeDenote TypeDenoteRegular.
 From Denotation Require Import TypeEquivCore TypeEquivTermBase TypeEquivTermResult DenotationSetMapFacts.

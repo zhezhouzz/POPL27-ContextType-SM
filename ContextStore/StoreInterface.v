@@ -10,6 +10,8 @@ Section StoreInterface.
 
 Context {V : Type} `{ValueSig V}.
 
+(** Paper Definition D.1 calls this an environment: a finite map from
+    variables to values.  We use the name [Store] throughout the artifact. *)
 Definition Store : Type := gmap atom V.
 Definition LStore : Type := gmap logic_var V.
 

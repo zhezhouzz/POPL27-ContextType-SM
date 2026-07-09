@@ -888,6 +888,9 @@ Proof.
   - eapply res_models_fuel_scoped; exact Hmodel.
 Qed.
 
+(** Formula satisfaction from paper Definition 4.3.  The public judgment
+    [m ⊨ φ] is defined by running the structurally recursive fuel semantics
+    for the syntactic measure of [φ]. *)
 Definition res_models (m : WfWorldT) (φ : FormulaT) : Prop :=
   res_models_fuel (formula_measure φ) m φ.
 
@@ -910,6 +913,7 @@ Qed.
 Definition entails (φ ψ : FormulaT) : Prop :=
   ∀ m, res_models m φ → res_models m ψ.
 
+(** Mechanized statement of paper Theorem 4.4, Kripke monotonicity. *)
 Lemma res_models_kripke
     (m n : WfWorldT) (φ : FormulaT) :
   m ⊑ n →

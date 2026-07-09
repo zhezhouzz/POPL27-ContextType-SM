@@ -1,9 +1,6 @@
 (** * ContextTyping.SoundnessApp
 
-    App proof support for the direct Fundamental theorem.
-    Keeping this case in a focused file makes timing diagnostics local and
-    avoids re-checking the full Fundamental dispatch while proving Arrow
-    application transport. *)
+    Application cases of the Fundamental theorem. *)
 
 From Stdlib Require Import Lia.
 From CoreLang Require Import BasicTyping BasicTypingProps InstantiationProps

@@ -1,8 +1,6 @@
 (** * ContextTyping.SoundnessLam
 
-    Lam and LamD proof support for the direct Fundamental theorem.
-    These lemmas are kept out of [Soundness.v] so the Fundamental dispatch file
-    does not re-check the large Arrow/Wand transport proofs on every edit. *)
+    Lambda and separating-lambda cases of the Fundamental theorem. *)
 
 From CoreLang Require Import BasicTyping BasicTypingProps InstantiationProps
   SmallStep StrongNormalization.

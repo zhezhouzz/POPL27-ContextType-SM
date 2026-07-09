@@ -7,6 +7,9 @@ From Stdlib Require Import Logic.ProofIrrelevance.
 
 (** ** Abstract context algebra *)
 
+(** This class packages the algebraic operations on capabilities/resources
+    used in Sec. 4.2 and Definitions D.3--D.5: unit, separating product,
+    nondeterministic sum, and refinement order. *)
 Class ContextAlgebra (M : Type) := {
   ca_one  : M;
   ca_times_def : M → M → Prop;

@@ -1,12 +1,6 @@
 (** * ContextTyping.SoundnessCaseTactics
 
-    Deterministic proof-start tactics for split Fundamental/Soundness cases.
-
-    These tactics only perform the common wrapper work shared by many case
-    lemmas: opening an entailment goal, applying already-available entailment
-    hypotheses to the current context model, running regular extraction, and
-    normalizing denotation wrappers.  They deliberately do not solve the
-    semantic core of any case. *)
+    Shared proof-start tactics for Fundamental/Soundness cases. *)
 
 From Denotation Require Import Context.
 From ContextTyping Require Import Typing TypingRegular.
@@ -46,4 +40,3 @@ Ltac soundness_case_start :=
   soundness_intro_entailment;
   soundness_pose_entailments;
   soundness_regular.
-

@@ -1,8 +1,7 @@
 (** * BasicDenotation.BasicTypingFormula
 
     Encoding CoreLang basic type well-formedness side conditions as
-    ContextLogic formulas.  We keep only the component formulas; obligation
-    wrapper sugar is intentionally avoided on the new route. *)
+    ContextLogic formulas. *)
 
 From CoreLang Require Import LocallyNamelessExtra.
 From ContextBasicDenotation Require Import Notation StoreTyping TermSyntax TermOpen.
@@ -946,6 +945,8 @@ Proof.
   unfold context_ty_wf_formula, context_ty_wf_qual.
   rewrite formula_fv_fiber_atom. reflexivity.
 Qed.
+(** Basic-typing guard from paper Sec. 4.4, packaged as a formula so it can be
+    conjoined with type denotations. *)
 Definition expr_basic_typing_qual
     (Σ : lty_env) (e : tm) (T : ty) : qualifier (V := value) :=
   tqual (dom Σ)

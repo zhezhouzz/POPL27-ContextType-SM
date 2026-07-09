@@ -1,12 +1,6 @@
 (** * ContextTyping.Soundness
 
-    Fundamental theorem entry point for the current context-type denotation.
-
-    The proof is organized around direct denotation bridges for the constructs
-    that manipulate result worlds.  The TLet branch chooses the
-    result-extension witness locally and calls [tlet_intro_denotation];
-    higher-order and branching cases use dedicated transport lemmas for
-    applications, matches, fixed points, and persistent values. *)
+    Fundamental theorem and denotational soundness entry point. *)
 
 From CoreLang Require Import BasicTyping BasicTypingProps InstantiationProps
   SmallStep StrongNormalization.
@@ -972,6 +966,9 @@ Qed.
 
 (** ** Fundamental theorem *)
 
+(** Mechanized Fundamental Theorem.  The statement is for the
+    nondeterministic calculus from Sec. 5, which includes the deterministic
+    fragment used in paper Theorem 4.10. *)
 Theorem Fundamental (Σ : gmap atom ty) (Γ : ctx) (e : tm) (τ : context_ty) :
   has_context_type Φ Σ Γ e τ ->
   ctx_denote_under Σ Γ ⊫ ty_denote_under Σ Γ τ e.
@@ -1074,6 +1071,8 @@ Proof.
         apply lookup_union_r. apply lookup_empty.
 Qed.
 
+(** Closed-program denotational soundness, corresponding to paper
+    Corollary 4.11 / Theorem 5.3. *)
 Theorem denotational_soundness e τ :
   has_context_type Φ ∅ CtxEmpty e τ ->
   forall x,

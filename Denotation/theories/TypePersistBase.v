@@ -1942,11 +1942,7 @@ Qed.
 
 End TypePersist.
 
-(** Shared side-condition tactics for the persistent-over Wand proofs.
-
-    Keep these tiny and deterministic: they are not proof-search tactics, only
-    wrappers around the repeated freshness shapes that appear after opening the
-    result-first Wand denotation. *)
+(** Freshness side-condition tactics for persistent-over Wand proofs. *)
 Ltac persist_fresh_from H :=
   clear -H; set_solver.
 

@@ -1,9 +1,6 @@
 (** * BasicDenotation.BasicTypingOpen
 
-    Opening lemmas for the basic typing side-condition formulas.  This file
-    keeps the expensive locally-nameless open/close transport proofs out of
-    [BasicTypingFormula.v], so files that only need model/introduction facts do
-    not re-check the open transport block. *)
+    Opening lemmas for the basic typing side-condition formulas. *)
 
 From ContextBasicDenotation Require Import Notation StoreTyping TermSyntax TermEval
   TermOpen BasicTypingFormula.

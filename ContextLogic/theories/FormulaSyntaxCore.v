@@ -5,9 +5,10 @@ From Stdlib Require Import Logic.FunctionalExtensionality Logic.PropExtensionali
 
 (** * Context Logic syntax
 
-    Formulas track lvar support first; atom free variables are the projection
-    [lvars_fv].  Exists is intentionally absent in this phase because the type
-    denotation path does not need it yet. *)
+    Formula syntax for paper Definition 4.3, plus the persistent modality from
+    Sec. 5.  Formulas track lvar support first; atom free variables are the
+    projection [lvars_fv].  Exists is intentionally absent because the checked
+    type denotation path does not need it. *)
 
 Section Formula.
 

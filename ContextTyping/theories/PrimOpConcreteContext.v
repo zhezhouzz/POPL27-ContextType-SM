@@ -2,9 +2,9 @@
 
     Concrete primitive-operation context for the current core operators.
 
-    All concrete primitives use graph-precise result qualifiers.  Generator
-    primitives take a unit argument; their graph relation enumerates all
-    boolean or natural results. *)
+    Concrete instance of paper Definition 4.9 for the core operators.
+    Generator primitives take a unit argument; their result relation enumerates
+    all boolean or natural results. *)
 
 From CoreLang Require Import BasicTyping BasicTypingProps SmallStep
   OperationalProps StrongNormalization.
@@ -155,6 +155,7 @@ Ltac fold_result_basic_typing_formula_open :=
         with (formula_open 0 y (result_basic_typing_formula b)) in H
   end.
 
+(** Concrete primitive-operation context used by the closed soundness wrapper. *)
 Definition concrete_primop_sig (op : prim_op) : primop_sig :=
   match op with
   | op_eq0 =>

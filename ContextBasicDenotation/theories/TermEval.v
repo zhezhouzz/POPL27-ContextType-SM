@@ -1,6 +1,6 @@
 (** * BasicDenotation.TermEval
 
-    Split out from [Term.v] to keep individual proof files small. *)
+    Evaluation predicates used by term-denotation formulas. *)
 
 From ContextBasicDenotation Require Import Notation StoreTyping.
 From ContextBasicDenotation Require Import TermSyntax.
@@ -1105,6 +1105,8 @@ Proof.
     + exists ({[x := inhabitant]} : StoreT). simpl. reflexivity.
 Defined.
 
+(** Totality guard from paper Sec. 4.4: every store in the current resource
+    must make [e] terminate with some result. *)
 Definition expr_total_qual (e : tm) : qualifier (V := value) :=
   tqual (tm_lvars e)
     (fun s => must_terminating (lstore_instantiate_tm (lso_store s) e)).
