@@ -1,0 +1,751 @@
+From LocallyNameless Require Import Tactics Classes.
+From CoreLang Require Import Syntax LocallyNamelessProps.
+
+(** * Additional locally-nameless algebra for CoreLang
+
+    This file contains helper lemmas that are useful for typing and
+    denotation proofs, but are not needed by the core locally-nameless
+    regularity development in [LocallyNamelessProps]. *)
+
+Lemma subst_open_var_value x y u k v :
+  x <> y ->
+  lc_value u ->
+  value_subst x u (open_value k (vfvar y) v) =
+  open_value k (vfvar y) (value_subst x u v).
+Proof.
+  intros Hxy Hlc.
+  rewrite subst_open_value by exact Hlc.
+  simpl. by rewrite decide_False.
+Qed.
+
+Lemma subst_open_var_tm x y u k e :
+  x <> y ->
+  lc_value u ->
+  tm_subst x u (open_tm k (vfvar y) e) =
+  open_tm k (vfvar y) (tm_subst x u e).
+Proof.
+  intros Hxy Hlc.
+  rewrite subst_open_tm by exact Hlc.
+  simpl. by rewrite decide_False.
+Qed.
+
+Lemma open_subst_same_value x y k v :
+  x ∉ fv_value v ->
+  value_subst x (vfvar y) (open_value k (vfvar x) v) =
+  open_value k (vfvar y) v.
+Proof.
+  intros Hfresh. by apply subst_intro_value.
+Qed.
+
+Lemma open_subst_same_tm x y k e :
+  x ∉ fv_tm e ->
+  tm_subst x (vfvar y) (open_tm k (vfvar x) e) =
+  open_tm k (vfvar y) e.
+Proof.
+  intros Hfresh. by apply subst_intro_tm.
+Qed.
+
+Lemma subst_body_value x u v :
+  body_val v -> lc_value u -> body_val (value_subst x u v).
+Proof.
+  intros [L Hbody] Hlc.
+  let acc := collect_stales ({[x]} : aset) in
+  exists (L ∪ acc). intros y Hy.
+  rewrite <- subst_open_var_value by my_set_solver.
+  apply subst_lc_value; auto. apply Hbody. my_set_solver.
+Qed.
+
+Lemma subst_body_tm x u e :
+  body_tm e -> lc_value u -> body_tm (tm_subst x u e).
+Proof.
+  intros [L Hbody] Hlc.
+  let acc := collect_stales ({[x]} : aset) in
+  exists (L ∪ acc). intros y Hy.
+  rewrite <- subst_open_var_tm by my_set_solver.
+  apply subst_lc_tm; auto. apply Hbody. my_set_solver.
+Qed.
+
+Lemma lc_implies_body_value v :
+  lc_value v -> body_val v.
+Proof.
+  intros Hlc. exists ∅. intros x _. by rewrite open_rec_lc_value.
+Qed.
+
+Lemma lc_implies_body_tm e :
+  lc_tm e -> body_tm e.
+Proof.
+  intros Hlc. exists ∅. intros x _. by rewrite open_rec_lc_tm.
+Qed.
+
+Lemma fv_of_subst_mutual :
+  (forall v x u,
+    fv_value (value_subst x u v) ⊆ (fv_value v ∖ {[x]}) ∪ fv_value u) *
+  (forall e x u,
+    fv_tm (tm_subst x u e) ⊆ (fv_tm e ∖ {[x]}) ∪ fv_value u).
+Proof.
+  apply value_tm_mutind; simpl; intros; try set_solver.
+  destruct (decide (x0 = x)); set_solver.
+Qed.
+
+Lemma fv_of_subst_value x u v :
+  fv_value (value_subst x u v) ⊆ (fv_value v ∖ {[x]}) ∪ fv_value u.
+Proof. exact (fst fv_of_subst_mutual v x u). Qed.
+
+Lemma fv_of_subst_tm x u e :
+  fv_tm (tm_subst x u e) ⊆ (fv_tm e ∖ {[x]}) ∪ fv_value u.
+Proof. exact (snd fv_of_subst_mutual e x u). Qed.
+
+Lemma close_rm_fv_value x k v :
+  x ∉ fv_value (close_value x k v).
+Proof.
+  revert k. induction v using value_mut with
+      (P0 := fun e => ∀ k, x ∉ fv_tm (close_tm x k e));
+      simpl; intros k; try my_set_solver.
+  destruct (decide (x = x0)); my_set_solver.
+Qed.
+
+Lemma close_rm_fv_tm x k e :
+  x ∉ fv_tm (close_tm x k e).
+Proof.
+  revert k. induction e using tm_mut with
+      (P := fun v => ∀ k, x ∉ fv_value (close_value x k v));
+      simpl; intros k; try my_set_solver.
+  destruct (decide (x = x0)); my_set_solver.
+Qed.
+
+Lemma open_with_fresh_include_fv_value x v k :
+  x ∉ fv_value v ->
+  {[x]} ∪ fv_value v ⊆ {[x]} ∪ fv_value (open_value k (vfvar x) v).
+Proof.
+  intros Hfresh.
+  pose proof (open_fv_value' v (vfvar x) k). my_set_solver.
+Qed.
+
+Lemma open_with_fresh_include_fv_tm x e k :
+  x ∉ fv_tm e ->
+  {[x]} ∪ fv_tm e ⊆ {[x]} ∪ fv_tm (open_tm k (vfvar x) e).
+Proof.
+  intros Hfresh.
+  pose proof (open_fv_tm' e (vfvar x) k). my_set_solver.
+Qed.
+
+Lemma subst_commute_value x ux y uy v :
+  x <> y ->
+  x ∉ fv_value uy ->
+  y ∉ fv_value ux ->
+  value_subst x ux (value_subst y uy v) =
+  value_subst y uy (value_subst x ux v).
+Proof.
+  intros Hxy Hxuy Hyux.
+  induction v using value_mut with
+      (P0 := fun e =>
+        tm_subst x ux (tm_subst y uy e) =
+        tm_subst y uy (tm_subst x ux e));
+      simpl; try reflexivity.
+  - destruct (decide (y = x0)); subst; simpl.
+    + rewrite decide_False by done.
+      simpl. rewrite decide_True by reflexivity.
+      by rewrite subst_fresh_value_proven.
+    + destruct (decide (x = x0)); subst; simpl.
+      * symmetry. by rewrite subst_fresh_value_proven.
+      * by rewrite decide_False by done.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+Qed.
+
+Lemma subst_commute_tm x ux y uy e :
+  x <> y ->
+  x ∉ fv_value uy ->
+  y ∉ fv_value ux ->
+  tm_subst x ux (tm_subst y uy e) =
+  tm_subst y uy (tm_subst x ux e).
+Proof.
+  intros Hxy Hxuy Hyux.
+  induction e using tm_mut with
+      (P := fun v =>
+        value_subst x ux (value_subst y uy v) =
+        value_subst y uy (value_subst x ux v));
+      simpl; try reflexivity.
+  - destruct (decide (y = x0)); subst; simpl.
+    + rewrite decide_False by done.
+      simpl. rewrite decide_True by reflexivity.
+      by rewrite subst_fresh_value_proven.
+    + destruct (decide (x = x0)); subst; simpl.
+      * symmetry. by rewrite subst_fresh_value_proven.
+      * by rewrite decide_False by done.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+Qed.
+
+Lemma subst_subst_value x ux y uy v :
+  x <> y ->
+  y ∉ fv_value ux ->
+  value_subst x ux (value_subst y uy v) =
+  value_subst y (value_subst x ux uy) (value_subst x ux v).
+Proof.
+  intros Hxy Hyux.
+  induction v using value_mut with
+      (P0 := fun e =>
+        tm_subst x ux (tm_subst y uy e) =
+        tm_subst y (value_subst x ux uy) (tm_subst x ux e));
+      simpl; try reflexivity.
+  - destruct (decide (y = x0)); subst; simpl.
+    + rewrite decide_False by done.
+      simpl. rewrite decide_True by reflexivity. reflexivity.
+    + destruct (decide (x = x0)); subst; simpl.
+      * symmetry. by rewrite subst_fresh_value_proven.
+      * by rewrite decide_False by done.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+Qed.
+
+Lemma subst_subst_tm x ux y uy e :
+  x <> y ->
+  y ∉ fv_value ux ->
+  tm_subst x ux (tm_subst y uy e) =
+  tm_subst y (value_subst x ux uy) (tm_subst x ux e).
+Proof.
+  intros Hxy Hyux.
+  induction e using tm_mut with
+      (P := fun v =>
+        value_subst x ux (value_subst y uy v) =
+        value_subst y (value_subst x ux uy) (value_subst x ux v));
+      simpl; try reflexivity.
+  - destruct (decide (y = x0)); subst; simpl.
+    + rewrite decide_False by done.
+      simpl. rewrite decide_True by reflexivity. reflexivity.
+    + destruct (decide (x = x0)); subst; simpl.
+      * symmetry. by rewrite subst_fresh_value_proven.
+      * by rewrite decide_False by done.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+Qed.
+
+Lemma close_fresh_rec_value x k v :
+  x ∉ fv_value v ->
+  close_value x k v = v.
+Proof.
+  revert k. induction v using value_mut with
+      (P0 := fun e => ∀ k, x ∉ fv_tm e -> close_tm x k e = e);
+      simpl; intros k Hfresh; try reflexivity; try (f_equal; eauto; my_set_solver).
+  by rewrite decide_False by my_set_solver.
+Qed.
+
+Lemma close_fresh_rec_tm x k e :
+  x ∉ fv_tm e ->
+  close_tm x k e = e.
+Proof.
+  revert k. induction e using tm_mut with
+      (P := fun v => ∀ k, x ∉ fv_value v -> close_value x k v = v);
+      simpl; intros k Hfresh; try reflexivity; try (f_equal; eauto; my_set_solver).
+  by rewrite decide_False by my_set_solver.
+Qed.
+
+Lemma close_var_rename_value x y k v :
+  y ∉ fv_value v ->
+  close_value x k v =
+  close_value y k (value_subst x (vfvar y) v).
+Proof.
+  revert k. induction v using value_mut with
+      (P0 := fun e => ∀ k,
+        y ∉ fv_tm e ->
+        close_tm x k e =
+        close_tm y k (tm_subst x (vfvar y) e));
+      simpl; intros k Hy; try reflexivity; try (f_equal; eauto; my_set_solver).
+  destruct (decide (x = x0)); subst; simpl.
+  - rewrite decide_True by reflexivity. reflexivity.
+  - by rewrite decide_False by my_set_solver.
+Qed.
+
+Lemma close_var_rename_tm x y k e :
+  y ∉ fv_tm e ->
+  close_tm x k e =
+  close_tm y k (tm_subst x (vfvar y) e).
+Proof.
+  revert k. induction e using tm_mut with
+      (P := fun v => ∀ k,
+        y ∉ fv_value v ->
+        close_value x k v =
+        close_value y k (value_subst x (vfvar y) v));
+      simpl; intros k Hy; try reflexivity; try (f_equal; eauto; my_set_solver).
+  destruct (decide (x = x0)); subst; simpl.
+  - rewrite decide_True by reflexivity. reflexivity.
+  - by rewrite decide_False by my_set_solver.
+Qed.
+
+Lemma open_close_var_value_aux x v k :
+  open_value k (vfvar x) v = v ->
+  open_value k (vfvar x) (close_value x k v) = v.
+Proof.
+  revert k. induction v using value_mut with
+      (P0 := fun e => ∀ k,
+        open_tm k (vfvar x) e = e ->
+        open_tm k (vfvar x) (close_tm x k e) = e);
+      simpl; intros k Hopen; try exact Hopen.
+  - destruct (decide (x = x0)); subst; simpl.
+    + rewrite decide_True by reflexivity. reflexivity.
+    + reflexivity.
+  - apply f_equal. injection Hopen as H0. eauto.
+  - apply f_equal. injection Hopen as H0. eauto.
+  - apply f_equal. injection Hopen as H0. eauto.
+  - injection Hopen as H1 H2.
+    f_equal; eauto.
+  - apply f_equal. injection Hopen as H0. eauto.
+  - injection Hopen as H1 H2.
+    f_equal; eauto.
+  - injection Hopen as H1 H2 H3.
+    f_equal; eauto.
+Qed.
+
+Lemma open_close_var_tm_aux x e k :
+  open_tm k (vfvar x) e = e ->
+  open_tm k (vfvar x) (close_tm x k e) = e.
+Proof.
+  revert k. induction e using tm_mut with
+      (P := fun v => ∀ k,
+        open_value k (vfvar x) v = v ->
+        open_value k (vfvar x) (close_value x k v) = v);
+      simpl; intros k Hopen; try exact Hopen.
+  - destruct (decide (x = x0)); subst; simpl.
+    + rewrite decide_True by reflexivity. reflexivity.
+    + reflexivity.
+  - apply f_equal. injection Hopen as H0. eauto.
+  - apply f_equal. injection Hopen as H0. eauto.
+  - apply f_equal. injection Hopen as H0. eauto.
+  - injection Hopen as H1 H2.
+    f_equal; eauto.
+  - apply f_equal. injection Hopen as H0. eauto.
+  - injection Hopen as H1 H2.
+    f_equal; eauto.
+  - injection Hopen as H1 H2 H3.
+    f_equal; eauto.
+Qed.
+
+Lemma open_close_var_value x v :
+  lc_value v ->
+  open_value 0 (vfvar x) (close_value x 0 v) = v.
+Proof.
+  intros Hlc. apply open_close_var_value_aux.
+  by apply open_rec_lc_value.
+Qed.
+
+Lemma open_close_var_tm x e :
+  lc_tm e ->
+  open_tm 0 (vfvar x) (close_tm x 0 e) = e.
+Proof.
+  intros Hlc. apply open_close_var_tm_aux.
+  by apply open_rec_lc_tm.
+Qed.
+
+Lemma fv_of_subst_closed_reverse_mutual :
+  (forall v x u,
+    fv_value u = ∅ ->
+    fv_value v ∖ {[x]} ⊆ fv_value (value_subst x u v)) *
+  (forall e x u,
+    fv_value u = ∅ ->
+    fv_tm e ∖ {[x]} ⊆ fv_tm (tm_subst x u e)).
+Proof.
+  apply value_tm_mutind; simpl; intros; try set_solver.
+  destruct (decide (x0 = x)); subst; simpl; set_solver.
+Qed.
+
+Lemma fv_of_subst_value_closed x u v :
+  fv_value u = ∅ ->
+  fv_value (value_subst x u v) = fv_value v ∖ {[x]}.
+Proof.
+  intros Hu.
+  apply leibniz_equiv.
+  split.
+  - pose proof (fv_of_subst_value x u v) as Hsub.
+    rewrite Hu in Hsub. my_set_solver.
+  - by apply (fst fv_of_subst_closed_reverse_mutual).
+Qed.
+
+Lemma fv_of_subst_tm_closed x u e :
+  fv_value u = ∅ ->
+  fv_tm (tm_subst x u e) = fv_tm e ∖ {[x]}.
+Proof.
+  intros Hu.
+  apply leibniz_equiv.
+  split.
+  - pose proof (fv_of_subst_tm x u e) as Hsub.
+    rewrite Hu in Hsub. my_set_solver.
+  - by apply (snd fv_of_subst_closed_reverse_mutual).
+Qed.
+
+Lemma subst_shadow_value x z u v :
+  x ∉ fv_value v ->
+  value_subst x u (value_subst z (vfvar x) v) =
+  value_subst z u v.
+Proof.
+  revert x z u. induction v using value_mut with
+      (P0 := fun e => ∀ x z u,
+        x ∉ fv_tm e ->
+        tm_subst x u (tm_subst z (vfvar x) e) =
+        tm_subst z u e);
+      simpl; intros x' z u Hfresh; try reflexivity.
+  - destruct (decide (z = x)); subst; simpl.
+    + rewrite decide_True by reflexivity. reflexivity.
+    + rewrite decide_False by my_set_solver.
+      destruct (decide (x' = x)); subst; my_set_solver.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+Qed.
+
+Lemma subst_shadow_tm x z u e :
+  x ∉ fv_tm e ->
+  tm_subst x u (tm_subst z (vfvar x) e) =
+  tm_subst z u e.
+Proof.
+  revert x z u. induction e using tm_mut with
+      (P := fun v => ∀ x z u,
+        x ∉ fv_value v ->
+        value_subst x u (value_subst z (vfvar x) v) =
+        value_subst z u v);
+      simpl; intros x' z u Hfresh; try reflexivity.
+  - destruct (decide (z = x)); subst; simpl.
+    + rewrite decide_True by reflexivity. reflexivity.
+    + rewrite decide_False by my_set_solver.
+      destruct (decide (x' = x)); subst; my_set_solver.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+  - f_equal; eauto; my_set_solver.
+Qed.
+
+Lemma subst_close_value x y u k v :
+  x ∉ fv_value u ->
+  x <> y ->
+  close_value x k (value_subst y u v) =
+  value_subst y u (close_value x k v).
+Proof.
+  intros Hux Hxy.
+  revert k. induction v using value_mut with
+      (P0 := fun e => ∀ k,
+        close_tm x k (tm_subst y u e) =
+        tm_subst y u (close_tm x k e));
+      simpl; intros k; try reflexivity; try (f_equal; eauto).
+  destruct (decide (y = x0)); subst; simpl.
+  - rewrite decide_False by done.
+    simpl. rewrite decide_True by reflexivity.
+    by rewrite close_fresh_rec_value.
+  - destruct (decide (x = x0)); subst; simpl.
+    + reflexivity.
+    + by rewrite decide_False by done.
+Qed.
+
+Lemma subst_close_tm x y u k e :
+  x ∉ fv_value u ->
+  x <> y ->
+  close_tm x k (tm_subst y u e) =
+  tm_subst y u (close_tm x k e).
+Proof.
+  intros Hux Hxy.
+  revert k. induction e using tm_mut with
+      (P := fun v => ∀ k,
+        close_value x k (value_subst y u v) =
+        value_subst y u (close_value x k v));
+      simpl; intros k; try reflexivity; try (f_equal; eauto).
+  destruct (decide (y = x0)); subst; simpl.
+  - rewrite decide_False by done.
+    simpl. rewrite decide_True by reflexivity.
+    by rewrite close_fresh_rec_value.
+  - destruct (decide (x = x0)); subst; simpl.
+    + reflexivity.
+    + by rewrite decide_False by done.
+Qed.
+
+(* After the UnderType-style mutual induction, only the bound-variable normal
+   form remains; keep that case behind a small tactic instead of scattering
+   low-level [decide] splits through the proof. *)
+Local Ltac solve_open_swap_bvar :=
+  autounfold with class_simpl in *; simpl in *;
+  repeat match goal with
+  | |- context[decide (?i = ?j)] =>
+      destruct (decide (i = j)); subst; simpl in *; try congruence
+  end;
+  try rewrite open_rec_lc_value by eauto;
+  try reflexivity.
+
+Definition open_swap_mutual :
+  (forall (t : value) i j (u v : value),
+    lc_value u ->
+    lc_value v ->
+    i <> j ->
+    {i ~> v} ({j ~> u} t) = {j ~> u} ({i ~> v} t)) *
+  (forall (t : tm) i j (u v : value),
+    lc_value u ->
+    lc_value v ->
+    i <> j ->
+    {i ~> v} ({j ~> u} t) = {j ~> u} ({i ~> v} t)).
+Proof.
+  apply value_tm_mutind; intros; autounfold with class_simpl in *; ln_simpl; auto;
+    try solve [autounfold with class_simpl in *; ln_simpl; f_equal; eauto].
+  all: solve_open_swap_bvar.
+Defined.
+
+Lemma open_swap_value (t : value) i j (u v : value) :
+    lc_value u ->
+    lc_value v ->
+    i <> j ->
+    {i ~> v} ({j ~> u} t) = {j ~> u} ({i ~> v} t).
+Proof. exact (fst open_swap_mutual t i j u v). Qed.
+
+Lemma open_swap_tm (t : tm) i j (u v : value) :
+    lc_value u ->
+    lc_value v ->
+    i <> j ->
+    {i ~> v} ({j ~> u} t) = {j ~> u} ({i ~> v} t).
+Proof. exact (snd open_swap_mutual t i j u v). Qed.
+
+Lemma open_lc_respect_mutual :
+  (forall v' (Hlc : lc_value v') k u w v,
+    v' = {k ~> u} v ->
+    lc_value u ->
+    lc_value w ->
+    lc_value ({k ~> w} v)) /\
+  (forall e' (Hlc : lc_tm e') k u w e,
+    e' = {k ~> u} e ->
+    lc_value u ->
+    lc_value w ->
+    lc_tm ({k ~> w} e)).
+Proof.
+  apply lc_mutind; intros;
+    repeat match goal with
+    | H : _ = {_ ~> _} ?e |- _ =>
+        destruct e; autounfold with class_simpl in *; simpl in *;
+        try case_decide; simplify_eq
+    end; eauto.
+  - eapply LC_lam.
+    let x := fresh "x" in
+    let acc := collect_stales tt in instantiate (1 := L ∪ acc); intros x **;
+    autounfold with class_simpl in *; simpl in *;
+    assert (HxL : x ∉ L) by my_set_solver;
+    specialize (H x HxL);
+    match goal with
+    | |- lc_tm (open_tm 0 (vfvar ?x) (open_tm (S ?k) ?w ?e)) =>
+        replace (open_tm 0 (vfvar x) (open_tm (S k) w e))
+          with (open_tm (S k) w (open_tm 0 (vfvar x) e))
+          by (symmetry; apply open_swap_tm; eauto; lia)
+    end;
+    eapply H; [symmetry; apply open_swap_tm; eauto; lia | eauto | eauto].
+  - eapply LC_fix.
+    let x := fresh "x" in
+    let acc := collect_stales tt in instantiate (1 := L ∪ acc); intros x **;
+    autounfold with class_simpl in *; simpl in *;
+    assert (HxL : x ∉ L) by my_set_solver;
+    specialize (H x HxL);
+    match goal with
+    | |- lc_value (open_value 0 (vfvar ?x) (open_value (S ?k) ?w ?v)) =>
+        replace (open_value 0 (vfvar x) (open_value (S k) w v))
+          with (open_value (S k) w (open_value 0 (vfvar x) v))
+          by (symmetry; apply open_swap_value; eauto; lia)
+    end;
+    eapply H; [symmetry; apply open_swap_value; eauto; lia | eauto | eauto].
+  - eapply LC_lete; eauto.
+    let x := fresh "x" in
+    let acc := collect_stales tt in instantiate (1 := L ∪ acc); intros x **;
+    autounfold with class_simpl in *; simpl in *;
+    assert (HxL : x ∉ L) by my_set_solver;
+    specialize (H0 x HxL);
+    match goal with
+    | |- lc_tm (open_tm 0 (vfvar ?x) (open_tm (S ?k) ?w ?e)) =>
+        replace (open_tm 0 (vfvar x) (open_tm (S k) w e))
+          with (open_tm (S k) w (open_tm 0 (vfvar x) e))
+          by (symmetry; apply open_swap_tm; eauto; lia)
+    end;
+    eapply H0; [symmetry; apply open_swap_tm; eauto; lia | eauto | eauto].
+Qed.
+
+Lemma open_lc_respect_value k u w v :
+  lc_value u ->
+  lc_value w ->
+  lc_value (open_value k u v) ->
+  lc_value (open_value k w v).
+Proof.
+  intros Hu Hw Hlc.
+  exact (proj1 open_lc_respect_mutual (open_value k u v) Hlc k u w v eq_refl Hu Hw).
+Qed.
+
+Lemma open_lc_respect_tm k u w e :
+  lc_value u ->
+  lc_value w ->
+  lc_tm (open_tm k u e) ->
+  lc_tm (open_tm k w e).
+Proof.
+  intros Hu Hw Hlc.
+  exact (proj2 open_lc_respect_mutual (open_tm k u e) Hlc k u w e eq_refl Hu Hw).
+Qed.
+
+Lemma open_idemp_value k u v :
+  lc_value u ->
+  open_value k u (open_value k u v) = open_value k u v.
+Proof.
+  intros Hlc.
+  revert k. induction v using value_mut with
+      (P0 := fun e => ∀ k,
+        open_tm k u (open_tm k u e) = open_tm k u e);
+      simpl; intros k; try reflexivity; try (f_equal; eauto).
+  destruct (decide (k = n)); subst; simpl.
+  - by rewrite open_rec_lc_value.
+  - by rewrite decide_False by done.
+Qed.
+
+Lemma open_idemp_tm k u e :
+  lc_value u ->
+  open_tm k u (open_tm k u e) = open_tm k u e.
+Proof.
+  intros Hlc.
+  revert k. induction e using tm_mut with
+      (P := fun v => ∀ k,
+        open_value k u (open_value k u v) = open_value k u v);
+      simpl; intros k; try reflexivity; try (f_equal; eauto).
+  destruct (decide (k = n)); subst; simpl.
+  - by rewrite open_rec_lc_value.
+  - by rewrite decide_False by done.
+Qed.
+
+(** ** Shared locally-nameless class instances
+
+    These instances expose the concrete CoreLang lemmas above through the
+    reusable classes.  Keeping them here avoids a small instance-only file that
+    reloads the whole locally-nameless layer just to register typeclasses. *)
+
+#[global] Instance OpenVar_value : OpenVar value := vfvar.
+#[global] Instance OpenArgLc_value : OpenArgLc value := lc_value.
+
+#[global] Instance CloseOpenVar_value : CloseOpenVar value value.
+Proof. intros v x k Hx. exact (close_open_var_value v x k Hx). Qed.
+
+#[global] Instance CloseOpenVar_tm : CloseOpenVar value tm.
+Proof. intros e x k Hx. exact (close_open_var_tm e x k Hx). Qed.
+
+#[global] Instance OpenFv_value : OpenFv value value.
+Proof. intros v u k. exact (open_fv_value v u k). Qed.
+
+#[global] Instance OpenFv_tm : OpenFv value tm.
+Proof. intros e u k. exact (open_fv_tm e u k). Qed.
+
+#[global] Instance OpenFvPrime_value : OpenFvPrime value value.
+Proof. intros v u k. exact (open_fv_value' v u k). Qed.
+
+#[global] Instance OpenFvPrime_tm : OpenFvPrime value tm.
+Proof. intros e u k. exact (open_fv_tm' e u k). Qed.
+
+#[global] Instance CloseFreshRec_value : CloseFreshRec value.
+Proof. intros v x k Hx. exact (close_fresh_rec_value x k v Hx). Qed.
+
+#[global] Instance CloseFreshRec_tm : CloseFreshRec tm.
+Proof. intros e x k Hx. exact (close_fresh_rec_tm x k e Hx). Qed.
+
+#[global] Instance CloseRmFv_value : CloseRmFv value.
+Proof. intros v x k. exact (close_rm_fv_value x k v). Qed.
+
+#[global] Instance CloseRmFv_tm : CloseRmFv tm.
+Proof. intros e x k. exact (close_rm_fv_tm x k e). Qed.
+
+#[global] Instance Fact1_value : Fact1 value value.
+Proof. intros u v e i j Hij Heq. exact (open_rec_open_eq_value u v e i j Hij Heq). Qed.
+
+#[global] Instance Fact1_tm : Fact1 value tm.
+Proof. intros u v e i j Hij Heq. exact (open_rec_open_eq_tm u v e i j Hij Heq). Qed.
+
+#[global] Instance OpenRecLc_value : OpenRecLc value value.
+Proof. intros v Hlc k u. exact (open_rec_lc_value v Hlc k u). Qed.
+
+#[global] Instance OpenRecLc_tm : OpenRecLc value tm.
+Proof. intros e Hlc k u. exact (open_rec_lc_tm e Hlc k u). Qed.
+
+#[global] Instance OpenCloseVar_value : OpenCloseVar value value.
+Proof. intros v x Hlc. exact (open_close_var_value x v Hlc). Qed.
+
+#[global] Instance OpenCloseVar_tm : OpenCloseVar value tm.
+Proof. intros e x Hlc. exact (open_close_var_tm x e Hlc). Qed.
+
+#[global] Instance OpenSwap_value : OpenSwap value value.
+Proof. intros v i j u w Hu Hw Hij. exact (open_swap_value v i j u w Hu Hw Hij). Qed.
+
+#[global] Instance OpenSwap_tm : OpenSwap value tm.
+Proof. intros e i j u w Hu Hw Hij. exact (open_swap_tm e i j u w Hu Hw Hij). Qed.
+
+#[global] Instance OpenLcRespect_value : OpenLcRespect value value.
+Proof.
+  intros v u w k Hopen Hu Hw.
+  exact (open_lc_respect_value k u w v Hu Hw Hopen).
+Qed.
+
+#[global] Instance OpenLcRespect_tm : OpenLcRespect value tm.
+Proof.
+  intros e u w k Hopen Hu Hw.
+  exact (open_lc_respect_tm k u w e Hu Hw Hopen).
+Qed.
+
+#[global] Instance SubstFresh_value : SubstFresh value.
+Proof. intros v x u Hx. exact (subst_fresh_value_proven x u v Hx). Qed.
+
+#[global] Instance SubstFresh_tm : SubstFresh tm.
+Proof. intros e x u Hx. exact (subst_fresh_tm_proven x u e Hx). Qed.
+
+#[global] Instance SubstOpen_value : SubstOpen value.
+Proof. intros v u w x k Hw. exact (subst_open_value x u w k v Hw). Qed.
+
+#[global] Instance SubstOpen_tm : SubstOpen tm.
+Proof. intros e u w x k Hw. exact (subst_open_tm x u w k e Hw). Qed.
+
+#[global] Instance SubstOpenVar_value : SubstOpenVar value.
+Proof. intros x y u v k Hxy Hu. exact (subst_open_var_value x y u k v Hxy Hu). Qed.
+
+#[global] Instance SubstOpenVar_tm : SubstOpenVar tm.
+Proof. intros x y u e k Hxy Hu. exact (subst_open_var_tm x y u k e Hxy Hu). Qed.
+
+#[global] Instance SubstLc_value : SubstLc value.
+Proof. intros v Hlc x u Hu. exact (subst_lc_value x u v Hlc Hu). Qed.
+
+#[global] Instance SubstLc_tm : SubstLc tm.
+Proof. intros e Hlc x u Hu. exact (subst_lc_tm x u e Hlc Hu). Qed.
+
+#[global] Instance SubstIntro_value : SubstIntro value.
+Proof. intros v x w k Hx Hw. exact (subst_intro_value x w k v Hx Hw). Qed.
+
+#[global] Instance SubstIntro_tm : SubstIntro tm.
+Proof. intros e x w k Hx Hw. exact (subst_intro_tm x w k e Hx Hw). Qed.
+
+#[global] Instance FvOfSubst_value : FvOfSubst value.
+Proof. intros x u v. exact (fv_of_subst_value x u v). Qed.
+
+#[global] Instance FvOfSubst_tm : FvOfSubst tm.
+Proof. intros x u e. exact (fv_of_subst_tm x u e). Qed.
+
+#[global] Instance FvOfSubstClosed_value : FvOfSubstClosed value.
+Proof. intros x u v Hu. exact (fv_of_subst_value_closed x u v Hu). Qed.
+
+#[global] Instance FvOfSubstClosed_tm : FvOfSubstClosed tm.
+Proof. intros x u e Hu. exact (fv_of_subst_tm_closed x u e Hu). Qed.
