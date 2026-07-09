@@ -43,13 +43,89 @@ make
 ```
 
 As a rough reference point, on an Apple M5 machine with 10 logical CPUs, a
-clean build of this artifact completed in about 2 minutes 33 seconds
-(153 seconds) using:
+clean build of this artifact completed in about 2 minutes 28 seconds
+(148 seconds) using:
 
 ```bash
 make clean
 rocq makefile -f _CoqProject -o Makefile
 make TIMED=1
+```
+
+### No Admitted Proofs
+
+The source-level admit scan is empty:
+
+```bash
+$ rg -n "Admitted\\.|admit\\." -g '*.v' .
+# no output
+```
+
+The top-level metatheorems were also checked with Rocq's `Print Assumptions`.
+The output below is the output of compiling a small check file that imports
+`ContextTyping.Soundness` and prints the assumptions of the Fundamental
+Theorem and the denotational soundness theorem, including their concrete
+primitive-context wrappers.  No project-local axiom or admitted theorem is
+reported; the only assumptions are the standard logical principles used by the
+development and its dependencies.
+
+```coq
+From ContextTyping Require Import Soundness.
+
+Print Assumptions Fundamental.
+Print Assumptions denotational_soundness.
+Print Assumptions concrete_Fundamental.
+Print Assumptions concrete_denotational_soundness.
+```
+
+```text
+Print Assumptions Fundamental.
+Axioms:
+PropExtensionality.propositional_extensionality :
+  forall P Q : Prop, P <-> Q -> P = Q
+ProofIrrelevance.proof_irrelevance : forall (P : Prop) (p1 p2 : P), p1 = p2
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+ClassicalEpsilon.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+Classical_Prop.classic : forall P : Prop, P \/ ~ P
+
+Print Assumptions denotational_soundness.
+Axioms:
+PropExtensionality.propositional_extensionality :
+  forall P Q : Prop, P <-> Q -> P = Q
+ProofIrrelevance.proof_irrelevance : forall (P : Prop) (p1 p2 : P), p1 = p2
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+ClassicalEpsilon.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+Classical_Prop.classic : forall P : Prop, P \/ ~ P
+
+Print Assumptions concrete_Fundamental.
+Axioms:
+PropExtensionality.propositional_extensionality :
+  forall P Q : Prop, P <-> Q -> P = Q
+ProofIrrelevance.proof_irrelevance : forall (P : Prop) (p1 p2 : P), p1 = p2
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+ClassicalEpsilon.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+Classical_Prop.classic : forall P : Prop, P \/ ~ P
+
+Print Assumptions concrete_denotational_soundness.
+Axioms:
+PropExtensionality.propositional_extensionality :
+  forall P Q : Prop, P <-> Q -> P = Q
+ProofIrrelevance.proof_irrelevance : forall (P : Prop) (p1 p2 : P), p1 = p2
+FunctionalExtensionality.functional_extensionality_dep :
+  forall (A : Type) (B : A -> Type) (f g : forall x : A, B x),
+  (forall x : A, f x = g x) -> f = g
+ClassicalEpsilon.constructive_indefinite_description :
+  forall (A : Type) (P : A -> Prop), (exists x : A, P x) -> {x : A | P x}
+Classical_Prop.classic : forall P : Prop, P \/ ~ P
 ```
 
 ## Design Choices and Differences from the Paper
