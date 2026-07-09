@@ -175,7 +175,7 @@ Qed.
 (** The tlet facts below are intentionally stated at the operational layer.
     They are the principles the ContextTyping totality proof should use.  Their
     proofs are independent of refinements/resources, so they belong here even
-    when later proof engineering temporarily admits them. *)
+    though their main consumers live in higher semantic layers. *)
 
 Lemma strongly_normalizing_fuel_tlete_elim_e1 n e1 e2 :
   strongly_normalizing_fuel n (tlete e1 e2) ->

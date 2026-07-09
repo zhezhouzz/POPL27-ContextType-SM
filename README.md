@@ -52,9 +52,9 @@ rocq makefile -f _CoqProject -o Makefile
 make TIMED=1
 ```
 
-After compilation, users can check that the top-level theorems do not depend
-on any project-local admitted theorem by running Rocq's `Print Assumptions` on
-the following constants:
+During the build, the final file
+`ContextTyping/theories/SoundnessAssumptions.v` runs Rocq's
+`Print Assumptions` on the top-level theorems:
 
 ```coq
 From ContextTyping Require Import Soundness.

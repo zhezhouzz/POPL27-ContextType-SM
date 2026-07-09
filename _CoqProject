@@ -130,3 +130,4 @@ ContextTyping/theories/SoundnessFixSelf.v
 ContextTyping/theories/SoundnessFix.v
 ContextTyping/theories/SoundnessPersist.v
 ContextTyping/theories/Soundness.v
+ContextTyping/theories/SoundnessAssumptions.v
