@@ -34,12 +34,23 @@ is available with:
 docker run --rm hello-world
 ```
 
-The image is built from Ubuntu 22.04 and supports both AMD64 and ARM64 hosts.
-Allow approximately 4 GB of memory and 10 GB of free disk space for the build.
+The published image is built from Ubuntu 22.04.
 
-### Build and Enter the Image
+### Using the Pre-Built Docker Image
 
-From the repository root, build the image:
+Pull the pre-built artifact image from Docker Hub:
+
+```bash
+docker pull anonymousartifact/context-types:popl27
+```
+
+This is the recommended evaluation path.  The image already contains the
+pinned dependencies and a compiled copy of every Rocq source file.
+
+### Building the Docker Image (Optional)
+
+Alternatively, rebuild the image from the supplied `Dockerfile` at the
+repository root:
 
 ```bash
 docker build --tag context-types:popl27 .
@@ -50,8 +61,17 @@ source file.  It therefore already performs a complete proof check.  On an
 ARM64 host with 8 Docker CPUs, the proof-compilation phase took roughly 2--3
 minutes; a complete first image build took about 7 minutes 30 seconds,
 including dependency downloads and installation.  Times will vary with the
-host and network connection.  To enter the resulting image at the artifact
-root, run:
+host and network connection.
+
+### Running the Docker Image
+
+To enter the pre-built image at the artifact root, run:
+
+```bash
+docker run --rm -it anonymousartifact/context-types:popl27
+```
+
+If the image was built locally instead, run:
 
 ```bash
 docker run --rm -it context-types:popl27
@@ -64,7 +84,7 @@ admitted proofs, prints the assumptions of the top-level theorems, and asks
 Rocq's kernel checker to validate the complete soundness module:
 
 ```bash
-docker run --rm context-types:popl27 make artifact-check
+docker run --rm anonymousartifact/context-types:popl27 make artifact-check
 ```
 
 The command ends with:
@@ -104,9 +124,12 @@ make print-assumptions | less
 To rebuild all proofs from scratch inside the image, use:
 
 ```bash
-docker run --rm context-types:popl27 bash -lc \
+docker run --rm anonymousartifact/context-types:popl27 bash -lc \
   'make clean && make -j"$(nproc)" && make artifact-check'
 ```
+
+Replace `anonymousartifact/context-types:popl27` with
+`context-types:popl27` in these commands when using the locally built image.
 
 The `GNUmakefile` generates Rocq's `Makefile.coq` automatically; reviewers do
 not need to invoke `rocq makefile` directly.
