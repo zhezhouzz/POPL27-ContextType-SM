@@ -13,44 +13,123 @@ mechanization of the deterministic metatheory.
 
 The compiled development contains no `Admitted.`/`admit.` in Rocq source files.
 
-## Compilation and Dependencies
+## Getting Started
 
-The artifact was checked with:
+The recommended way to evaluate the artifact is with Docker.  The image fixes
+the complete proof environment:
 
 | Package | Version |
 | --- | --- |
+| OCaml | 4.14.4 |
 | [Rocq](https://rocq-prover.org/) | 9.1.0 |
-| [rocq-stdpp](https://gitlab.mpi-sws.org/iris/stdpp) | dev.2026-01-23 |
-| [coq-hammer](https://github.com/lukaszcz/coqhammer) | 1.3.2+9.1 |
+| [Rocq standard library](https://github.com/coq/stdlib) | 9.0.0 |
+| [rocq-stdpp](https://gitlab.mpi-sws.org/iris/stdpp) | dev.2026-01-23.0.217a887d |
 
-A typical opam setup is:
+### Requirements
 
-```bash
-opam switch create with-rocq-1 ocaml-base-compiler
-eval $(opam env --switch=with-rocq-1)
-
-opam repo add rocq-released https://github.com/rocq-archive/opam-rocq-archive/releases/download/0.0.1/rocq-released-repo.tar.gz
-opam repo add iris-dev https://gitlab.mpi-sws.org/iris/opam/-/raw/master/index
-
-opam install rocq-core.9.1.0 rocq-stdpp.dev.2026-01-23 coq-hammer.1.3.2+9.1
-```
-
-Build from the repository root with:
+Install [Docker](https://docs.docker.com/get-docker/) and check that the daemon
+is available with:
 
 ```bash
-rocq makefile -f _CoqProject -o Makefile
-make
+docker run --rm hello-world
 ```
 
-As a rough reference point, on an Apple M5 machine with 10 logical CPUs, a
-clean build of this artifact completed in about 2 minutes 28 seconds
-(148 seconds) using:
+The image is built from Ubuntu 22.04 and supports both AMD64 and ARM64 hosts.
+Allow approximately 4 GB of memory and 10 GB of free disk space for the build.
+
+### Build and Enter the Image
+
+From the repository root, build the image:
 
 ```bash
-make clean
-rocq makefile -f _CoqProject -o Makefile
-make TIMED=1
+docker build --tag context-types:popl27 .
 ```
+
+The Docker build installs the pinned dependencies and compiles every Rocq
+source file.  It therefore already performs a complete proof check.  On an
+ARM64 host with 8 Docker CPUs, the proof-compilation phase took roughly 2--3
+minutes; a complete first image build took about 7 minutes 30 seconds,
+including dependency downloads and installation.  Times will vary with the
+host and network connection.  To enter the resulting image at the artifact
+root, run:
+
+```bash
+docker run --rm -it context-types:popl27
+```
+
+### Quick Artifact Check
+
+The following non-interactive command checks the compiled development for
+admitted proofs, prints the assumptions of the top-level theorems, and asks
+Rocq's kernel checker to validate the complete soundness module:
+
+```bash
+docker run --rm context-types:popl27 make artifact-check
+```
+
+The command ends with:
+
+```text
+No Admitted./admit. commands found.
+Kernel check completed successfully.
+Artifact check completed successfully.
+```
+
+The checks can also be run separately while exploring the artifact:
+
+```bash
+# Show the exact compiler and library versions installed in the image.
+make environment
+
+# Search every Rocq source file for admitted proofs.
+make check-admits
+
+# Print the assumptions of the four top-level soundness theorems.
+make print-assumptions
+
+# Ask Rocq's kernel checker to validate the complete soundness module.
+make kernel-check
+```
+
+The image includes `vim`, `less`, `ripgrep`, and `git` for source inspection.
+For example, the theorem statements and their proof assumptions can be
+inspected directly with:
+
+```bash
+vim ContextTyping/theories/Soundness.v
+vim ContextTyping/theories/SoundnessAssumptions.v
+make print-assumptions | less
+```
+
+To rebuild all proofs from scratch inside the image, use:
+
+```bash
+docker run --rm context-types:popl27 bash -lc \
+  'make clean && make -j"$(nproc)" && make artifact-check'
+```
+
+The `GNUmakefile` generates Rocq's `Makefile.coq` automatically; reviewers do
+not need to invoke `rocq makefile` directly.
+
+## Evaluation Guide
+
+The submitted artifact evaluates the mechanized metatheory claims of the
+paper.  A complete clean build followed by `make artifact-check` checks all of
+the following claims.  The later correspondence table gives precise source
+locations for their definitions and supporting infrastructure.
+
+| Claim | Paper | Artifact evidence | Evaluation |
+| --- | --- | --- | --- |
+| Context-logic satisfaction is Kripke monotone | Theorem 4.4 | `res_models_kripke` | Full build |
+| The typing judgment satisfies its logical relation | Theorem 4.10 | `Fundamental` and `concrete_Fundamental` | Full build and printed assumptions |
+| Closed well-typed programs satisfy their context types | Corollary 4.11 | `denotational_soundness` and `concrete_denotational_soundness` | Full build and printed assumptions |
+| The nondeterministic calculus, generators, and type-level persistence are sound | Section 5 and Theorem 5.3 | The same top-level theorems instantiated with the concrete primitive context | Full build and printed assumptions |
+| The mechanized definitions of universal quantification and persistence agree with their paper-style characterizations | Sections 4--5 | `res_models_forall_full_world_iff` and `res_models_persist_order_iff` | Full build |
+
+No case-study formalization is included or claimed by this artifact; the
+artifact is the complete mechanization of the core metatheory.
+
+### Assumption Output
 
 During the build, the final file
 `ContextTyping/theories/SoundnessAssumptions.v` runs Rocq's

@@ -1,6 +1,7 @@
 Makefile.coq*
 Makefile
 Makefile.conf
+Dockerfile.local
 .*.aux
 .*.d
 *.a
