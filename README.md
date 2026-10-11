@@ -285,12 +285,12 @@ ContextBase
 | Definition/Theorems | Paper | Definition | Notation |
 | --- | --- | --- | --- |
 | Store/environment | Definition D.1 in appendix | Stores (`Store`, `LStore`) in `ContextStore/StoreInterface.v` (lines 15 and 16); restriction and compatibility notations in the same file (lines 48-51) | `σ ↾ X`, `σ1 ##ₛ σ2`, map notation `<[x := v]> σ`, `σ !! x` |
-| Capability/resource/world | Definition 4.1, Definition D.2 in appendix | Worlds/resources (`World`, `WfWorld`) in `ContextAlgebra/theories/ResourceInterfaceCore.v` (lines 20 and 21); domain/stores/restriction/unit in the same file (lines 27-57) | `𝟙`, `Dom m`, `m ↾ X`, `m ⊑ᵣ n` |
+| Capability/resource/world | Definition 4.1, Definition D.2 in appendix | Worlds/resources (`World`, `WfWorld`) in `ContextAlgebra/theories/ResourceInterfaceCore.v` (lines 20 and 21); domain, stores, restriction, unit, and their notations in the same file (lines 30-69) | `𝟙`, `Dom m`, `m ↾ X`, `m ⊑ᵣ n` |
 | Fiber | Definition 4.2 | Fiber/projection operations in `ContextAlgebra/theories/ResourceInterfaceCore.v` (lines 605-608) | `fiber(mfib, m, X, σ)`, `mfib ∈ᶠ Fiber(m, X)` |
 | Resource algebra operations | Sec. 4.2, Definitions D.3–D.5 in appendix | Abstract algebra class (`ContextAlgebra`) in `ContextAlgebra/theories/ResourceAlgebra.v` (line 13); concrete compatibility/product/sum/subset in `ContextAlgebra/theories/ResourceInterfaceCore.v` (lines 443-451) | `m1 ##ᵣ m2`, `m1 ×[H] m2`, `m1 +[H] m2`, `m1 ⊆ᵣ m2` |
 | Formula syntax | Definition 4.3 and Sec. 5 | Formula syntax (`Formula`) in `ContextLogic/theories/FormulaSyntaxCore.v` (line 21) | `⊤`, `⊥`, `@atom q`, `P ∧ Q`, `P ∨ Q`, `P → Q`, `P ∗ Q`, `P -∗[d] Q`, `P ⊕ Q`, `∀. P`, `over P`, `under P`, `□ P`, `fib D |> P` |
 | Formula satisfaction | Definition 4.3 and persistence in Sec. 5 | Satisfaction (`res_models`) in `ContextLogic/theories/FormulaSemantics.v` (line 894) | `m ⊨ P` |
-| Entailment and equivalence | Definition 4.3 | Entailment (`entails`) in `ContextLogic/theories/FormulaSemantics.v` (line 913); formula equivalence (`formula_equiv`) in `ContextLogic/theories/FormulaConnectivesHigher.v` (line 820) | `P ⊫ Q`, `P ⊣⊢ Q` |
+| Entailment and equivalence | Definition 4.3 | Entailment (`entails`) in `ContextLogic/theories/FormulaSemantics.v` (line 913); formula equivalence (`formula_equiv`) and the corresponding notations in `ContextLogic/theories/FormulaConnectivesHigher.v` (lines 817-823) | `P ⊫ Q`, `P ⊣⊢ Q` |
 | Kripke monotonicity | Theorem 4.4 | `res_models_kripke` in `ContextLogic/theories/FormulaSemantics.v` (line 917) | `m ⊑ n -> m ⊨ P -> n ⊨ P` |
 | Core base types and primitive operations | Core language syntax (Fig. 1) | Basic types (`base_ty`) in `CoreLang/theories/Syntax.v` (line 14); primitive operations (`prim_op`) in `CoreLang/theories/Syntax.v` (line 45) | `Unit`, `Bool`, `Nat`, `T1 →ₜ T2`, `op_eq0`, `op_plus1`, `op_minus1`, `op_boolGen`, `op_natGen` |
 | Term syntax | Core language syntax (Fig. 1) | Mutually recursive values (`value`) and expressions (`tm`) in `CoreLang/theories/Syntax.v` (lines 76 and 83) | `ret v`, `let: e1 in e2`, `v1 · v2`, `if v then et else ef` |
@@ -370,6 +370,9 @@ Lemma res_models_forall_full_world_iff
           my ⊨ formula_open 0 y φ).
 ```
 
+This theorem is in
+`ContextLogic/theories/FormulaConnectivesHigher.v` (line 621).
+
 `FPersist P`, written `□ P`, is implemented similarly by using the smallest
 singleton resource needed to model `P`.  The definition projects the current
 resource to the support of `P` and requires this projection to be a singleton
@@ -385,6 +388,10 @@ Lemma res_models_persist_order_iff (m : WfWorldT) (φ : FormulaT) :
       (exist _ (singleton_world σ) (wf_singleton_world σ) : WfWorldT) in
     σw ⊑ m /\ σw ⊨ φ.
 ```
+
+This theorem and the persistence algebra lemmas below are in
+`ContextLogic/theories/FormulaConnectivesHigher.v` (lines 904, 949, 958, and
+988, respectively).
 
 The algebraic behavior used in the paper is then recovered by:
 
@@ -451,9 +458,9 @@ cover natural numbers.  The type denotation fixes this at the embedding point by
 building a typed qualifier atom.  The helper `typed_result_qual b φ` conjoins
 the shallow qualifier predicate with a base-typing check for the result slot
 inside the exact atom itself.  The helper definitions are in
-`Denotation/theories/TypeDenote.v` (lines 80-96), and the expanded
+`Denotation/theories/TypeDenote.v` (lines 86-102), and the expanded
 `CTOver`/`CTUnder` branches in `ty_denote_gas` show where that typed atom is
-used (lines 140-149):
+used (lines 150-159):
 
 ```coq
 Definition result_basic_typing_formula (b : base_ty) : FormulaT :=
@@ -487,7 +494,7 @@ Lemma res_models_minimal_on (S : aset) (m : WfWorldT) (φ : FormulaT) :
 ```
 
 This theorem appears in `ContextLogic/theories/FormulaSemantics.v` (line
-937).  The type denotation is designed so that the same idea is available for
+941).  The type denotation is designed so that the same idea is available for
 the logical relation.  At the beginning of the `ty_denote_gas` fixpoint, the
 environment is clipped to the variables relevant to the term `e` and type
 `τ`:
@@ -524,9 +531,9 @@ Definition ty_guard_formula
       (FHasType[Σ ⊢ e ⋮ (⌊τ⌋)%cty] ∧ FTotal[e])))%formula.
 ```
 
-The guard definition is in `Denotation/theories/TypeDenote.v` (line 7), and
+The guard definition is in `Denotation/theories/TypeDenote.v` (line 10), and
 the fixpoint begins with `guard[Σg; τ; e] ∧ ...` in the same file (lines
-131-136).
+141-145).
 
 The paper encodes these side conditions as
 `{Dom(Σ)} |> Atom(...)`: the binding-reference operator first fixes the
@@ -539,10 +546,15 @@ Definition FFiberAtom (q : qualifier) : Formula :=
 (* fiber_atom q  ≜  fib (qual_vars q) |> @atom q *)
 ```
 
+`FFiberAtom` is defined in
+`ContextLogic/theories/FormulaSyntaxCore.v` (line 111), and its notation is
+declared in `ContextLogic/theories/FormulaNotation.v` (line 21).  Concrete
+instances can be found in `StoreTyping.v`, `BasicTypingFormula.v`, and
+`TermEval.v`.
+
 The guard conjuncts above are all instances of this sugar:
 `FWorld[Σ]`, `FWfTy[Σ; τ]`, `FHasType[Σ ⊢ e ⋮ ⌊τ⌋]`, and `FTotal[e]`
-are each defined as `FFiberAtom` of an appropriate qualifier
-(see `StoreTyping.v` and `BasicTypingFormula.v` / `TermEval.v`).
+are each defined as `FFiberAtom` of an appropriate qualifier.
 Unlike the paper's single combined atom, the mechanization splits the guard
 into four such fiber-atoms and conjoins them.
 
@@ -599,7 +611,8 @@ changing its denotation.  For example, the match proof first relates a reachable
 branch to the whole boolean match term (`SoundnessMatch.v`, line 264), the
 lambda proof relates a beta-reduced body to an application of a lambda
 (`SoundnessLam.v`, line 781), and the fix proof relates an application of a fix
-value to the unfolded recursive body (`SoundnessFixBase.v`, line 675).
+value to the unfolded recursive body using `fix_tapp_unfold_tm_equiv_on`
+(`SoundnessFixBase.v`, line 834) and `ty_denote_gas_tm_equiv` (line 998).
 
 In a deterministic language, this kind of term-equivalence transport can often
 derive the let-introduction transport: the result slot inserted by the
